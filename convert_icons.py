@@ -18,18 +18,11 @@ from PIL import Image
 import os
 
 # OC Tier 2 custom palette (8 colors, set via gpu.setPaletteColor)
-# Chosen to cover all 6 item icons + UI elements
-# Index 0..7  =>  Lua PALETTE[1..8]
-OC_PALETTE = [
-    (0x11, 0x11, 0x11),  # 0: near-black  (background)
-    (0xEE, 0xEE, 0xEE),  # 1: near-white  (text, diamond, iron)
-    (0x33, 0x66, 0xCC),  # 2: blue        (border, diamond body)
-    (0xDD, 0xAA, 0x11),  # 3: orange-gold (gold ingot, stats)
-    (0x33, 0xBB, 0x33),  # 4: green       (emerald, win)
-    (0xCC, 0x33, 0x33),  # 5: red         (lose, exit button)
-    (0x99, 0x44, 0xBB),  # 6: purple      (ender pearl, nether star)
-    (0x88, 0x88, 0x88),  # 7: gray        (iron ingot, dim text)
-]
+# Computed at runtime from actual PNG pixels using median-cut quantization.
+# Slots 0 and 1 are forced (black bg + white text for UI readability).
+# Slots 2-7 are the 6 most representative colors from all 6 icon textures.
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # OC terminal characters are square, so half-block pixels are 2x taller than wide.
 # To display Minecraft 1:1 textures without vertical stretching:
@@ -49,6 +42,47 @@ ICONS = [
     ('nether_star', 'nether_star.png'),
 ]
 
+
+def compute_palette():
+    """Compute optimal 8-color palette from actual PNG files.
+    Slot 0 = forced near-black (UI background).
+    Slot 1 = forced near-white (UI text).
+    Slots 2-7 = 6 best colors extracted from all icon pixels via median-cut.
+    """
+    pixels = []
+    for _, fname in ICONS:
+        path = os.path.join(SCRIPT_DIR, fname)
+        if not os.path.exists(path):
+            continue
+        img = Image.open(path).convert('RGBA').resize((ICON_PIX_W, ICON_PIX_H), Image.LANCZOS)
+        for y in range(ICON_PIX_H):
+            for x in range(ICON_PIX_W):
+                r, g, b, a = img.getpixel((x, y))
+                if a >= 64:
+                    pixels.append((r, g, b))
+
+    n_free = 6
+    forced = [(0x0A, 0x0A, 0x0A), (0xEE, 0xEE, 0xEE)]
+
+    if len(pixels) >= n_free:
+        combined = Image.new('RGB', (len(pixels), 1))
+        combined.putdata(pixels)
+        try:
+            quant = combined.quantize(n_free, method=Image.Quantize.MEDIANCUT)
+        except Exception:
+            quant = combined.quantize(n_free)
+        raw = quant.getpalette()[:n_free * 3]
+        computed = [(raw[i*3], raw[i*3+1], raw[i*3+2]) for i in range(n_free)]
+    else:
+        computed = [(0x33, 0x66, 0xCC), (0xDD, 0xAA, 0x11), (0x33, 0xBB, 0x33),
+                    (0xCC, 0x33, 0x33), (0x99, 0x44, 0xBB), (0x88, 0x88, 0x88)]
+
+    return forced + computed
+
+
+OC_PALETTE = compute_palette()
+
+
 def nearest_idx(r, g, b):
     best, best_d = 0, float('inf')
     for i, (cr, cg, cb) in enumerate(OC_PALETTE):
@@ -57,7 +91,9 @@ def nearest_idx(r, g, b):
             best_d, best = d, i
     return best
 
-BG_IDX = nearest_idx(0x11, 0x11, 0x11)
+
+BG_IDX = nearest_idx(0x0A, 0x0A, 0x0A)
+
 
 def convert_image(filepath):
     img = Image.open(filepath).convert('RGBA')
@@ -108,6 +144,12 @@ def bytes_to_lua(b):
 def main():
     script_dir  = os.path.dirname(os.path.abspath(__file__))
     output_path = os.path.join(script_dir, 'icons.lua')
+
+    print(f'Computed palette ({len(OC_PALETTE)} colors from PNG data):')
+    for i, (r, g, b) in enumerate(OC_PALETTE):
+        tag = '(bg)' if i == 0 else '(text)' if i == 1 else ''
+        print(f'  [{i}] #{r:02X}{g:02X}{b:02X}  {tag}')
+
     palette_lua = ', '.join(f'0x{r:02X}{g:02X}{b:02X}' for r, g, b in OC_PALETTE)
     lines = [
         '-- icons.lua',
