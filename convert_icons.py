@@ -31,10 +31,14 @@ OC_PALETTE = [
     (0x88, 0x88, 0x88),  # 7: gray        (iron ingot, dim text)
 ]
 
-ICON_CHAR_W = 7
-ICON_CHAR_H = 8
-ICON_PIX_W  = ICON_CHAR_W
-ICON_PIX_H  = ICON_CHAR_H * 2   # = 16 pixel rows
+# OC terminal characters are square, so half-block pixels are 2x taller than wide.
+# To display Minecraft 1:1 textures without vertical stretching:
+#   ICON_PIX_H must equal ICON_PIX_W  (square source)
+#   ICON_CHAR_H = ICON_PIX_H // 2
+ICON_CHAR_W = 14           # chars wide per icon
+ICON_PIX_W  = ICON_CHAR_W  # = 14 source pixels wide
+ICON_PIX_H  = ICON_CHAR_W  # = 14 source pixels tall (SQUARE -> correct aspect)
+ICON_CHAR_H = ICON_PIX_H // 2  # = 7 chars tall
 
 ICONS = [
     ('diamond',     'diamond.png'),
