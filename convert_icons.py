@@ -44,10 +44,10 @@ CC_PALETTE_DICT = dict(CC_PALETTE)
 # ─────────────────────────────────────────────────────────────
 # Icon display dimensions
 # ─────────────────────────────────────────────────────────────
-ICON_CHAR_W = 5   # characters wide in the CC terminal
-ICON_CHAR_H = 4   # characters tall  (half-pixel: 2 pixel rows per char row)
+ICON_CHAR_W = 7   # characters wide in the CC terminal
+ICON_CHAR_H = 8   # characters tall  (half-pixel: 2 pixel rows per char row)
 ICON_PIX_W  = ICON_CHAR_W
-ICON_PIX_H  = ICON_CHAR_H * 2   # = 8 pixel rows
+ICON_PIX_H  = ICON_CHAR_H * 2   # = 16 pixel rows
 
 # CC upper-half-block character (decimal 143, 0x8F)
 # When used with blit(): fg color fills top half, bg color fills bottom half

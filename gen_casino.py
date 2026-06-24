@@ -44,11 +44,9 @@ S = {
     "title":       r("* OpenCasino *"),
     "win_hdr":     r("Инфо о выигрышах:"),
     "win_formula": r("Выигрыш = ставка * бонус"),
-    "w_edges":     r("2 одинаковых по краям  -  Бонус x1"),
-    "w_adj":       r("2 одинаковых рядом     -  Бонус x2"),
-    "row_iron":    r("Три железа  x5     Три золото  x10"),
-    "row_pearl":   r("Три жемчуг  x15    Три изумруд x20"),
-    "row_star":    r("Три звезда  x30    Три алмаза  x50"),
+    "w_edges":     r("По краям x1          Рядом x2"),
+    "row_iron":    r("Железо x5   Золото x10   Жемчуг x15"),
+    "row_pearl":   r("Изумруд x20  Звезда x30   Алмаз x50"),
     "min_bet":     r("Мин. ставка:"),
     "max_bet":     r("Макс. ставка:"),
     "spin_for":    r("Крутим на"),
@@ -299,12 +297,10 @@ local function drawRight()
     putCenter(2,{S['title']},C.title,C.bg,LW+2,W-1)
     put(RX,4, {S['win_hdr']},    C.header,C.bg)
     put(RX,5, {S['win_formula']},C.text,  C.bg)
-    put(RX,7, {S['w_edges']},    C.info,  C.bg)
-    put(RX,8, {S['w_adj']},      C.info,  C.bg)
-    put(RX,10,{S['row_iron']},   C.mult,  C.bg)
-    put(RX,11,{S['row_pearl']},  C.mult,  C.bg)
-    put(RX,12,{S['row_star']},   C.mult,  C.bg)
-    put(RX,13,{S['min_bet']}.." "..CFG.minBet..{S['cur']}.."   "..{S['max_bet']}.." "..CFG.maxBet..{S['cur']},C.dim,C.bg)
+    put(RX,6, {S['w_edges']},    C.info,  C.bg)
+    put(RX,8, {S['row_iron']},   C.mult,  C.bg)
+    put(RX,9, {S['row_pearl']},  C.mult,  C.bg)
+    put(RX,10,{S['min_bet']}.." "..CFG.minBet..{S['cur']}.."   "..{S['max_bet']}.." "..CFG.maxBet..{S['cur']},C.dim,C.bg)
 end
 
 -- [REELS] ----------------------------------------------------
