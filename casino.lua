@@ -51,21 +51,23 @@ local icons = loader()
 local ICW = icons.CHAR_WIDTH
 local ICH = icons.CHAR_HEIGHT
 
--- [COLOR MAPPING]  CC blit hex -> OC 24-bit RGB ---------------
-local BLIT_RGB = {
-    ["0"]=0xF0F0F0,["1"]=0xF2B233,["2"]=0xE57FD8,["3"]=0x99B2F2,
-    ["4"]=0xDEDE6C,["5"]=0x7FCC19,["6"]=0xF2B2CC,["7"]=0x4C4C4C,
-    ["8"]=0x999999,["9"]=0x4C99B2,["a"]=0xB266E5,["b"]=0x3366CC,
-    ["c"]=0x7F664C,["d"]=0x57A64E,["e"]=0xCC4C4C,["f"]=0x111111,
-}
+-- [GPU PALETTE INIT] ----------------------------------------
+-- Set the GPU's 8 palette slots to our custom icon/UI colors.
+-- OC Tier 2 GPU: 8 palette slots (indices 0-7).
+-- Palette matches OC_PALETTE in convert_icons.py exactly.
+for i=1,#icons.PALETTE do
+    pcall(gpu.setPaletteColor, i-1, icons.PALETTE[i])
+end
 
--- [COLORS] ---------------------------------------------------
+-- [COLORS] -- must match OC_PALETTE indices in convert_icons.py ---
+-- P[1]=0x111111 P[2]=0xEEEEEE P[3]=0x3366CC P[4]=0xDDAA11
+-- P[5]=0x33BB33 P[6]=0xCC3333 P[7]=0x9944BB P[8]=0x888888
 local C = {
-    bg=0x111111, border=0x3366CC, title=0x4C99B2, header=0x4C99B2,
-    text=0xF0F0F0, dim=0x999999, stat=0xDEDE6C, win=0x7FCC19,
-    lose=0xCC4C4C, info=0x99B2F2, mult=0xDEDE6C,
-    btnBet=0x3366CC, btnSpin=0x7FCC19, btnExit=0xCC4C4C,
-    slotBord=0x3366CC, slotBg=0x111111, avatar=0x4C99B2, player=0xDEDE6C,
+    bg=0x111111, border=0x3366CC, title=0x3366CC, header=0x3366CC,
+    text=0xEEEEEE, dim=0x888888, stat=0xDDAA11, win=0x33BB33,
+    lose=0xCC3333, info=0x3366CC, mult=0xDDAA11,
+    btnBet=0x3366CC, btnSpin=0x33BB33, btnExit=0xCC3333,
+    slotBord=0x3366CC, slotBg=0x111111, avatar=0x3366CC, player=0xDDAA11,
 }
 
 -- [STATE] ----------------------------------------------------
@@ -123,12 +125,11 @@ local function drawIcon(x,y,name)
     local icon=icons[name]
     if not icon then return end
     for ri,row in ipairs(icon) do
-        local cs,fg_s,bg_s=row[1],row[2],row[3]
+        local fg_s,bg_s=row[1],row[2]
         for col=1,ICW do
-            local ch=(cs:byte(col)==143) and UPPER_BLOCK or " "
-            gpu.setForeground(BLIT_RGB[fg_s:sub(col,col)] or C.bg)
-            gpu.setBackground(BLIT_RGB[bg_s:sub(col,col)] or C.bg)
-            gpu.set(x+col-1,y+ri-1,ch)
+            gpu.setForeground(icons.PALETTE[fg_s:byte(col)])
+            gpu.setBackground(icons.PALETTE[bg_s:byte(col)])
+            gpu.set(x+col-1,y+ri-1,UPPER_BLOCK)
         end
     end
 end
