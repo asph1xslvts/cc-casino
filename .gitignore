@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Casino save file (personal progress, don't commit)
+casino_save.dat
+
+# OS
+.DS_Store
+Thumbs.db
